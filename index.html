@@ -3,854 +3,789 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Surf Run 2 · Beach Quest to Reef Rush</title>
-  <meta name="description" content="Surf Run 2 starts with a beach quest, then continues into the Reef Rush ocean stage." />
+  <title>Shore Run · Surf Run Side Story</title>
+  <meta name="description" content="Shore Run is a Surf Run beach side story with jump, duck, collectibles, power-ups, modes and local best scores." />
   <meta name="theme-color" content="#fae8c5" />
   <style>
-    :root {
-      --sand-1: #fae8c5;
-      --sand-2: #fadb87;
-      --sand-3: #fccb42;
-      --sea: #065e8a;
-      --sea-light: #40c9d8;
-      --ink: #183145;
-      --muted: #6d5f4d;
-      --card: rgba(255, 255, 255, 0.62);
-      --card-strong: rgba(255, 255, 255, 0.86);
-      --accent: #ff8f3d;
-      --accent-2: #00b8c8;
-      --danger: #ff5e7e;
-      --ok: #35c46a;
-      --shadow: 0 24px 70px rgba(129, 77, 12, 0.22);
-      --radius: 28px;
-    }
+/* ── RESET ────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{overflow:hidden;touch-action:none;}
 
-    * { box-sizing: border-box; }
+:root{
+  --player-size:clamp(2.7rem,10vw,4rem);
+  --shake-x:11px;
+  --sand-lt:rgba(250,232,197,1);
+  --sand-md:rgba(250,219,135,1);
+  --sand-dk:rgba(252,203,66,1);
+  --ink:#3a1c00;
+  --ink-mid:rgba(58,28,0,.6);
+  --amber:rgba(255,205,55,1);
+}
 
-    body {
-      min-height: 100vh;
-      margin: 0;
-      color: var(--ink);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(255,255,255,.65), transparent 28%),
-        radial-gradient(circle at bottom right, rgba(6,94,138,.18), transparent 32%),
-        linear-gradient(180deg, var(--sand-1) 0%, var(--sand-2) 50%, var(--sand-3) 100%);
-    }
+/* ── BODY — sky → sand (template colours preserved at bottom) ── */
+body{
+  min-height:100vh;min-height:100dvh;height:100dvh;
+  margin:0;display:grid;place-items:center;
+  background:linear-gradient(180deg,
+    #4cbde6 0%,#84cee8 20%,#c8ecf8 38%,
+    var(--sand-lt) 52%,var(--sand-md) 76%,var(--sand-dk) 100%
+  );
+  overflow:hidden;position:relative;
+}
 
-    button { font: inherit; }
+/* ── PLAYER ──────────────────────────────────── */
+#player{
+  font-size:var(--player-size);
+  position:absolute;z-index:30;
+  letter-spacing:.18em;user-select:none;pointer-events:none;
+  transform:translate(-50%,-50%);will-change:transform,top;
+}
+#player span{display:inline-block;}
+#player.duck{transform:translate(-50%,-22%) scaleY(0.52)!important;}
+#player.inv{animation:inv .18s step-end infinite;}
+@keyframes inv{0%,100%{opacity:1}50%{opacity:0}}
+#player.shielded{
+  filter:drop-shadow(0 0 14px rgba(255,180,0,.9))
+         drop-shadow(0 0 30px rgba(255,140,0,.5));
+}
+#em-S.spin{animation:spin .38s ease-out;}
+@keyframes spin{
+  0%  {transform:rotate(0deg) scaleX(1);}
+  50% {transform:rotate(180deg) scaleX(-1);}
+  100%{transform:rotate(360deg) scaleX(1);}
+}
 
-    .game-shell {
-      width: min(1200px, calc(100% - 28px));
-      margin: 0 auto;
-      padding: 28px 0 40px;
-    }
+/* ── SCENE ───────────────────────────────────── */
+#sky-c{
+  position:absolute;top:0;left:0;
+  width:100%;height:52%;z-index:2;pointer-events:none;
+}
+#sea-strip{
+  position:absolute;left:0;right:0;top:48%;height:9%;
+  z-index:5;overflow:hidden;
+  background:linear-gradient(180deg,#35b8d5 0%,#1e9fbe 45%,#0e6678 100%);
+}
+.sea-glint{
+  position:absolute;top:0;left:-100%;right:-100%;height:2px;
+  background:linear-gradient(90deg,transparent 10%,rgba(255,255,255,.6) 45%,rgba(255,255,255,.76) 50%,rgba(255,255,255,.6) 55%,transparent 90%);
+  animation:glint 3.2s ease-in-out infinite;
+}
+@keyframes glint{0%,100%{transform:translateX(-15%);opacity:.5}50%{transform:translateX(15%);opacity:1}}
+#sea-strip::before,#sea-strip::after{
+  content:'';position:absolute;left:0;width:200%;height:5px;
+  background:repeating-linear-gradient(90deg,transparent 0 38px,rgba(255,255,255,.16) 38px 76px);
+  animation:sea-scroll 5s linear infinite;
+}
+#sea-strip::before{top:28%;}
+#sea-strip::after{top:62%;animation-duration:7s;animation-direction:reverse;}
+@keyframes sea-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-    .hero { margin-bottom: 22px; }
+#sand-c{position:absolute;left:0;width:100%;z-index:6;pointer-events:none;}
 
-    .eyebrow {
-      margin: 0 0 8px;
-      color: var(--sea);
-      text-transform: uppercase;
-      letter-spacing: .14em;
-      font-size: .76rem;
-      font-weight: 900;
-    }
+/* ── FLASH / SHAKE ───────────────────────────── */
+#flash{position:absolute;inset:0;z-index:56;pointer-events:none;opacity:0;}
+#flash.on{animation:flash .38s ease-out forwards;}
+@keyframes flash{
+  0%  {opacity:0;background:rgba(255,235,80,0);}
+  20% {opacity:1;background:rgba(255,235,80,.22);}
+  100%{opacity:0;background:rgba(255,235,80,0);}
+}
+html.shake{animation:shake .46s ease-out;}
+@keyframes shake{
+  0%,100%{transform:translate(0,0);}
+  15%{transform:translate(calc(var(--shake-x)*-1),4px) rotate(-1.2deg);}
+  30%{transform:translate(calc(var(--shake-x)*.9),-3px) rotate(1deg);}
+  50%{transform:translate(calc(var(--shake-x)*-.65),2px) rotate(-.7deg);}
+  68%{transform:translate(calc(var(--shake-x)*.75),-1px) rotate(.8deg);}
+  85%{transform:translate(-3px,0);}
+}
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: clamp(2.6rem, 7vw, 6.5rem);
-      line-height: .9;
-      letter-spacing: -.08em;
-    }
+/* ── HUD ─────────────────────────────────────── */
+#hud{
+  position:absolute;top:0;left:0;right:0;z-index:60;pointer-events:none;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  padding:14px 20px;font-family:'Courier New',monospace;
+  background:linear-gradient(180deg,rgba(255,255,255,.4) 0%,transparent 100%);
+}
+.hb{display:flex;flex-direction:column;gap:1px;}
+.hb:last-child{text-align:right;}.hb:nth-child(2){text-align:center;}
+.hl{font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;color:var(--ink-mid);}
+.hv{font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:900;color:var(--ink);text-shadow:0 1px 3px rgba(255,255,255,.6);}
+#lives-val{font-size:1.1rem;letter-spacing:.06em;}
+#spd-badge{
+  display:none;position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+  z-index:60;pointer-events:none;font-family:'Courier New',monospace;
+  font-size:.58rem;letter-spacing:.34em;text-transform:uppercase;color:var(--ink-mid);
+}
+#pause-btn{
+  display:none;position:absolute;top:62px;right:16px;z-index:67;
+  border:1px solid rgba(58,28,0,.22);background:rgba(255,255,255,.4);
+  color:var(--ink);border-radius:999px;padding:8px 11px;
+  font-family:'Courier New',monospace;font-weight:900;cursor:pointer;backdrop-filter:blur(6px);
+}
 
-    .hero p:last-child {
-      max-width: 760px;
-      margin: 0;
-      color: var(--muted);
-      font-size: 1.05rem;
-    }
+/* ── GAME OBJECTS ────────────────────────────── */
+.obs,.col,.pup{
+  position:absolute;transform:translate(-50%,-50%);
+  user-select:none;pointer-events:none;will-change:left,top;
+}
+.obs{font-size:2.6rem;z-index:28;}
+.col{font-size:2rem;z-index:28;animation:cpulse 1.4s ease-in-out infinite;}
+.pup{font-size:2.4rem;z-index:28;animation:ppulse 1.2s ease-in-out infinite;}
+@keyframes cpulse{0%,100%{filter:drop-shadow(0 0 4px rgba(255,210,80,.5))}50%{filter:drop-shadow(0 0 14px rgba(255,210,80,.9))}}
+@keyframes ppulse{0%,100%{filter:drop-shadow(0 0 4px rgba(80,200,255,.4))}50%{filter:drop-shadow(0 0 18px rgba(80,200,255,.9))}}
 
-    .game-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 330px;
-      gap: 18px;
-    }
+/* ── FLOAT TEXT ──────────────────────────────── */
+.float-txt{
+  position:absolute;z-index:55;pointer-events:none;
+  font-family:'Courier New',monospace;font-weight:900;
+  font-size:.88rem;letter-spacing:.1em;
+  animation:float-up .9s ease-out forwards;
+}
+@keyframes float-up{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-55px)}}
 
-    .game-card, .mission-panel section {
-      background: var(--card);
-      border: 1px solid rgba(255,255,255,.62);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(20px);
-    }
+/* ── SCREENS ─────────────────────────────────── */
+.screen{
+  position:absolute;inset:0;z-index:80;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(250,225,175,.82);backdrop-filter:blur(10px);
+  color:var(--ink);text-align:center;padding:2rem;overflow-y:auto;
+}
+.screen.off{display:none;}
+.se{font-size:clamp(2.6rem,7vw,5rem);margin-bottom:.22em;}
+.screen h2{
+  font-family:'Courier New',monospace;
+  font-size:clamp(2rem,6vw,4rem);font-weight:900;
+  letter-spacing:.15em;text-transform:uppercase;
+  color:#5c3500;text-shadow:0 0 24px rgba(255,180,0,.35);
+  margin-bottom:.1em;
+}
+.universe-tag{
+  font-family:'Courier New',monospace;
+  font-size:clamp(.52rem,1.3vw,.68rem);letter-spacing:.3em;
+  text-transform:uppercase;color:var(--ink-mid);margin-bottom:.6em;
+}
+.universe-tag a{color:#0a7ec5;text-decoration:none;border-bottom:1px solid rgba(10,126,197,.35);}
+.universe-tag a:hover{color:#065e94;}
+.ss{
+  font-family:'Courier New',monospace;
+  font-size:clamp(.52rem,1.3vw,.7rem);letter-spacing:.36em;
+  text-transform:uppercase;color:var(--ink-mid);margin:.26em 0;
+}
+.sbs{font-family:'Courier New',monospace;font-size:clamp(.75rem,1.8vw,1rem);color:rgba(58,28,0,.6);margin:.2em 0;}
 
-    .game-card { padding: 14px; }
+/* mode grid */
+.mode-grid{
+  width:min(620px,92vw);display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;margin:1em auto .5em;
+}
+.mode-card{
+  appearance:none;border:1px solid rgba(58,28,0,.18);
+  background:rgba(255,255,255,.5);border-radius:14px;
+  padding:12px 10px;cursor:pointer;
+  font-family:'Courier New',monospace;color:var(--ink);text-align:left;
+  transition:transform .15s,border-color .15s,background .15s,box-shadow .15s;
+}
+.mode-card:hover,.mode-card.active{
+  transform:translateY(-2px);border-color:rgba(200,130,0,.6);
+  background:rgba(255,215,70,.22);box-shadow:0 4px 22px rgba(200,130,0,.14);
+}
+.mode-e{font-size:1.5rem;display:block;margin-bottom:.25em;}
+.mode-n{display:block;font-weight:900;font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;}
+.mode-d{display:block;font-size:.5rem;line-height:1.35;color:var(--ink-mid);margin-top:.45em;letter-spacing:.08em;}
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 12px;
-    }
+/* panels */
+.start-panels{
+  width:min(620px,92vw);display:grid;
+  grid-template-columns:1fr 1fr;gap:10px;margin:.75em auto 0;
+}
+.mini-panel{
+  font-family:'Courier New',monospace;text-align:left;
+  background:rgba(255,255,255,.55);border:1px solid rgba(58,28,0,.14);
+  border-radius:14px;padding:10px 12px;color:var(--ink);
+}
+.panel-title{font-size:.54rem;letter-spacing:.28em;text-transform:uppercase;color:#a05c00;margin-bottom:6px;}
+.panel-line{
+  display:flex;justify-content:space-between;gap:10px;
+  font-size:.58rem;line-height:1.45;
+  border-top:1px solid rgba(58,28,0,.08);padding-top:4px;margin-top:4px;
+}
 
-    .stats div {
-      padding: 12px;
-      border-radius: 18px;
-      background: var(--card-strong);
-      border: 1px solid rgba(255,255,255,.7);
-    }
+/* buttons */
+.btns{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:1.2em;}
+.btn{
+  padding:.65em 2.2em;font-family:'Courier New',monospace;
+  font-size:clamp(.72rem,1.8vw,.92rem);font-weight:900;
+  letter-spacing:.28em;text-transform:uppercase;
+  color:#06101e;background:var(--amber);border:none;border-radius:2px;
+  cursor:pointer;text-decoration:none;display:inline-block;
+  box-shadow:0 0 20px rgba(255,165,0,.4);transition:transform .1s,box-shadow .1s;
+}
+.btn:hover{transform:scale(1.06);box-shadow:0 0 30px rgba(255,165,0,.75);}
+.btn:active{transform:scale(.97);}
+.btn-alt{
+  background:rgba(60,140,255,.15);color:rgba(10,60,140,.9);
+  border:1px solid rgba(80,160,255,.3);box-shadow:0 0 14px rgba(40,120,255,.12);
+}
+.btn-alt:hover{background:rgba(60,140,255,.28);}
+.btn-wave{
+  background:rgba(10,126,197,.1);color:#0a5e8a;
+  border:1px solid rgba(10,126,197,.28);box-shadow:0 0 14px rgba(10,126,197,.1);
+}
+.btn-wave:hover{background:rgba(10,126,197,.22);}
 
-    .stats span {
-      display: block;
-      color: var(--muted);
-      font-size: .72rem;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: .1em;
-    }
+/* leaderboard / rank */
+#leaderboard{
+  margin:.7em 0 0;font-family:'Courier New',monospace;
+  font-size:clamp(.56rem,1.4vw,.74rem);color:rgba(100,55,0,.8);
+  text-align:left;min-width:200px;
+}
+#leaderboard .lr{
+  display:flex;justify-content:space-between;gap:2em;
+  padding:.12em 0;border-bottom:1px solid rgba(58,28,0,.1);
+}
+#leaderboard .lr.me{color:#0a7ec5;text-shadow:0 0 8px rgba(10,126,197,.35);}
+#rank-line{
+  font-family:'Courier New',monospace;font-weight:900;
+  letter-spacing:.22em;text-transform:uppercase;color:#a05c00;margin:.45em 0;
+}
+.new-rec{
+  font-family:'Courier New',monospace;font-size:clamp(.76rem,1.9vw,1rem);
+  font-weight:900;letter-spacing:.2em;text-transform:uppercase;
+  color:#c07000;text-shadow:0 0 18px rgba(200,140,0,.6);
+  animation:rp .55s ease-in-out infinite;margin-top:.5em;
+}
+.new-rec.off{display:none;}
+@keyframes rp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.72;transform:scale(1.04)}}
 
-    .stats strong { font-size: 1.35rem; }
+/* modal */
+.modal{
+  position:absolute;inset:0;z-index:95;
+  display:none;align-items:center;justify-content:center;padding:1rem;
+  background:rgba(250,230,180,.6);backdrop-filter:blur(12px);color:var(--ink);
+}
+.modal.on{display:flex;}
+.modal-card{
+  width:min(420px,94vw);
+  background:rgba(255,255,255,.72);border:1px solid rgba(58,28,0,.14);
+  border-radius:22px;padding:22px;font-family:'Courier New',monospace;
+  box-shadow:0 20px 60px rgba(58,28,0,.12);
+}
+.modal-card h3{font-size:clamp(1.25rem,4vw,1.8rem);letter-spacing:.16em;text-transform:uppercase;margin-bottom:.45em;color:#5c3500;}
+.modal-card p{font-size:.72rem;line-height:1.6;color:var(--ink-mid);}
 
-    .scene {
-      position: relative;
-      overflow: hidden;
-      border-radius: 24px;
-      background: linear-gradient(180deg, #97e7ff 0%, #fff0c7 54%, #f5c76b 100%);
-      touch-action: none;
-    }
+/* mobile controls */
+#mobile-controls{
+  position:absolute;left:0;right:0;bottom:0;z-index:66;
+  display:none;pointer-events:none;padding:10px 12px 18px;justify-content:space-between;
+}
+.touch-pad{
+  pointer-events:auto;width:min(34vw,150px);height:58px;
+  border:1px solid rgba(58,28,0,.18);background:rgba(255,255,255,.35);
+  border-radius:22px;color:var(--ink);font-family:'Courier New',monospace;
+  font-weight:900;display:grid;place-items:center;backdrop-filter:blur(8px);
+  font-size:.75rem;letter-spacing:.12em;cursor:pointer;
+}
 
-    canvas {
-      display: block;
-      width: 100%;
-      aspect-ratio: 900 / 500;
-    }
-
-    .start-screen {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      background: rgba(255,240,199,.72);
-      backdrop-filter: blur(10px);
-    }
-
-    .start-screen.hidden { display: none; }
-
-    .start-panel {
-      width: min(520px, 100%);
-      text-align: center;
-      padding: 26px;
-      border-radius: 30px;
-      background: rgba(255,255,255,.76);
-      border: 1px solid rgba(255,255,255,.84);
-      box-shadow: var(--shadow);
-    }
-
-    .template-emoji {
-      font-size: 5rem;
-      line-height: 1;
-      filter: drop-shadow(0 14px 18px rgba(127,83,17,.2));
-    }
-
-    .pill {
-      display: inline-flex;
-      margin: 16px 0 10px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(255,143,61,.16);
-      color: #b95712;
-      font-size: .75rem;
-      font-weight: 950;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-
-    .pill.ocean { background: rgba(0,184,200,.16); color: var(--sea); }
-
-    .start-panel h2 {
-      margin: 0 0 8px;
-      font-size: clamp(2rem, 6vw, 4.2rem);
-      line-height: .9;
-      letter-spacing: -.06em;
-    }
-
-    .start-panel p { color: var(--muted); }
-
-    .start-panel button, .controls button {
-      border: 0;
-      cursor: pointer;
-      border-radius: 18px;
-      color: white;
-      background: linear-gradient(135deg, var(--accent), #ffbf59);
-      box-shadow: 0 15px 35px rgba(255,143,61,.26);
-      font-weight: 950;
-      transition: transform .16s ease, filter .16s ease;
-    }
-
-    .start-panel button:hover, .controls button:hover { transform: translateY(-2px); filter: brightness(1.04); }
-    .start-panel button { width: 100%; padding: 15px 18px; }
-
-    .controls {
-      display: none;
-      grid-template-columns: 1fr 1.5fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .controls button { min-height: 58px; }
-
-    .mission-panel {
-      display: grid;
-      gap: 14px;
-      align-content: start;
-    }
-
-    .mission-panel section { padding: 18px; }
-    .mission-panel h2 { margin: 0 0 12px; letter-spacing: -.04em; }
-    .mission-panel p { margin: 0; color: var(--muted); line-height: 1.55; }
-
-    .missions {
-      display: grid;
-      gap: 9px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .missions li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 11px;
-      border-radius: 16px;
-      color: var(--muted);
-      background: rgba(255,255,255,.54);
-      border: 1px solid rgba(255,255,255,.58);
-    }
-
-    .missions li.done {
-      color: var(--ink);
-      background: rgba(53,196,106,.18);
-      border-color: rgba(53,196,106,.4);
-    }
-
-    .missions li.done::after {
-      content: "Done";
-      margin-left: auto;
-      color: var(--ok);
-      font-size: .75rem;
-      font-weight: 950;
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 900px) {
-      .game-layout { grid-template-columns: 1fr; }
-      .controls { display: grid; }
-    }
-
-    @media (max-width: 560px) {
-      .game-shell { width: min(100% - 18px, 1200px); padding-top: 18px; }
-      .stats { grid-template-columns: repeat(2, 1fr); }
-      .template-emoji { font-size: 4.2rem; }
-    }
+/* ── RESPONSIVE ──────────────────────────────── */
+@media(max-width:700px){
+  :root{--player-size:clamp(2.45rem,13vw,3.35rem);--shake-x:4px;}
+  #hud{padding:10px 12px;}
+  .hl{font-size:.45rem;letter-spacing:.2em;}
+  .hv{font-size:1rem!important;}
+  #lives-val{font-size:.9rem!important;}
+  #pause-btn{top:54px;right:10px;}
+  .mode-grid{grid-template-columns:1fr 1fr;gap:8px;width:100%;}
+  .mode-card:nth-child(3){grid-column:1/-1;}
+  .start-panels{grid-template-columns:1fr;width:100%;}
+  .screen{padding:1rem .9rem;justify-content:flex-start;padding-top:6vh;}
+  .screen h2{font-size:clamp(1.7rem,10vw,3rem);}
+  .btns{gap:9px;margin-top:.85em;}
+  .btn{width:100%;max-width:320px;padding:.78em 1.2em;font-size:.68rem;}
+  #mobile-controls{display:flex;}
+  .touch-pad{height:64px;width:42vw;}
+}
+@media(prefers-reduced-motion:reduce){
+  .col,.pup,.sea-glint{animation-duration:40s!important;}
+  .btn,.mode-card{transition:none!important;}
+}
   </style>
 </head>
 <body>
-  <div class="game-shell">
-    <header class="hero">
-      <p class="eyebrow">Surf Run 2 · Beach Chapter → Ocean Chapter</p>
-      <h1>Beach Quest 🏖️</h1>
-      <p>Complete the beach prep first, then enter the water and continue into Reef Rush. This is one continuous game, not a replacement chapter.</p>
-    </header>
 
-    <main class="game-layout">
-      <section class="game-card">
-        <div class="stats">
-          <div><span>Score</span><strong id="score">0</strong></div>
-          <div><span>Shells</span><strong id="shells">0</strong></div>
-          <div><span>Energy</span><strong id="energy">100%</strong></div>
-          <div><span>Stage</span><strong id="stage">Beach</strong></div>
-        </div>
+<!-- SCENE LAYERS -->
+<canvas id="sky-c"></canvas>
+<div id="sea-strip"><div class="sea-glint"></div></div>
+<canvas id="sand-c"></canvas>
+<div id="flash"></div>
 
-        <div class="scene" id="scene">
-          <canvas id="game" width="900" height="500"></canvas>
+<!-- HUD -->
+<div id="hud">
+  <div class="hb"><span class="hl">Score</span><span class="hv" id="score-val">0</span></div>
+  <div class="hb"><span class="hl">Shells</span><span class="hv" id="shells-val">🐚 0</span></div>
+  <div class="hb"><span class="hl">Lives</span><span class="hv" id="lives-val">🤙🤙🤙</span></div>
+</div>
+<div id="spd-badge">▶ SPD <span id="spd-n">1.0</span></div>
+<button id="pause-btn" aria-label="Pause">Ⅱ</button>
 
-          <div class="start-screen" id="startScreen">
-            <div class="start-panel">
-              <div class="template-emoji">🏖️</div>
-              <p class="pill">Beach mission</p>
-              <h2>Start on the sand</h2>
-              <p>Collect shells, sunscreen and the surfboard. Then run to the shoreline to unlock Reef Rush.</p>
-              <button id="startBtn">Start Beach Quest</button>
-            </div>
-          </div>
+<!-- PLAYER: 🌊🏃🏖️ -->
+<p id="player"><span id="em-L">🌊</span><span id="em-S">🏃</span><span id="em-R">🏖️</span></p>
 
-          <div class="start-screen hidden" id="winScreen">
-            <div class="start-panel">
-              <div class="template-emoji">🏄‍♀️</div>
-              <p class="pill ocean">Run complete</p>
-              <h2 id="winTitle">Nice ride!</h2>
-              <p id="winText">You completed the beach intro and survived the first ocean run.</p>
-              <button id="restartBtn">Play Again</button>
-            </div>
-          </div>
-        </div>
+<!-- START SCREEN (hub) -->
+<div class="screen" id="start-screen">
+  <div class="se">🏖️🏃🌊</div>
+  <h2>SHORE RUN</h2>
+  <div class="universe-tag">A <a href="https://codepen.io/Laura-Andreea-the-typescripter/pen/vEyRgqQ" target="_blank" rel="noopener">Surf Run</a> side story</div>
+  <div class="ss">SPACE / tap → jump (2×) &nbsp;·&nbsp; ↓ S / swipe down → duck</div>
+  <div class="ss">dodge crabs &amp; eagles · collect 🐚⭐ · grab power-ups 🕶️⚡❤️</div>
 
-        <div class="controls">
-          <button id="leftBtn">←</button>
-          <button id="actionBtn">Collect / Jump</button>
-          <button id="rightBtn">→</button>
-        </div>
-      </section>
-
-      <aside class="mission-panel">
-        <section>
-          <h2>Missions</h2>
-          <ul class="missions">
-            <li id="m1"><span>🐚</span>Collect 8 shells</li>
-            <li id="m2"><span>🧴</span>Find sunscreen</li>
-            <li id="m3"><span>🏄‍♀️</span>Pick up the surfboard</li>
-            <li id="m4"><span>🌊</span>Reach the shoreline</li>
-            <li id="m5"><span>🪸</span>Survive Reef Rush</li>
-          </ul>
-        </section>
-
-        <section>
-          <h2>Continuity</h2>
-          <p>Beach Quest is the tutorial and story intro. After all beach missions are done, the scene shifts into the ocean and becomes Reef Rush.</p>
-        </section>
-
-        <section>
-          <h2>Controls</h2>
-          <p>Move with ← → or A/D. Press Space to collect nearby items or jump. Items are now easier to collect when you are close.</p>
-        </section>
-      </aside>
-    </main>
+  <div class="mode-grid" id="mode-grid">
+    <button class="mode-card active" data-mode="classic">
+      <span class="mode-e">🏃</span>
+      <span class="mode-n">Classic</span>
+      <span class="mode-d">balanced beach run</span>
+    </button>
+    <button class="mode-card" data-mode="chill">
+      <span class="mode-e">🌴</span>
+      <span class="mode-n">Chill</span>
+      <span class="mode-d">slower · 5 lives</span>
+    </button>
+    <button class="mode-card" data-mode="blaze">
+      <span class="mode-e">⚡</span>
+      <span class="mode-n">Blaze</span>
+      <span class="mode-d">high speed · 2 lives</span>
+    </button>
   </div>
 
+  <div class="start-panels">
+    <div class="mini-panel">
+      <div class="panel-title">Best Scores</div>
+      <div id="best-panel"></div>
+    </div>
+    <div class="mini-panel">
+      <div class="panel-title">Collection</div>
+      <div id="collection-panel"></div>
+    </div>
+  </div>
+
+  <div class="btns">
+    <button class="btn" id="start-btn">HIT THE SAND</button>
+    <a class="btn btn-wave" href="https://codepen.io/Laura-Andreea-the-typescripter/pen/vEyRgqQ" target="_blank" rel="noopener">🌊 SURF RUN</a>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div class="screen off" id="over-screen">
+  <div class="se" id="over-e">🏃💨🦀</div>
+  <h2>BEACHED!</h2>
+  <div class="sbs">Score: <strong id="final-s">0</strong></div>
+  <div id="rank-line">BEACH BUM</div>
+  <div class="sbs" id="shells-line">Shells: 0</div>
+  <div id="leaderboard"></div>
+  <div class="new-rec off" id="new-rec">🏆 NEW RECORD</div>
+  <div class="btns">
+    <button class="btn" id="retry-btn">BACK ON THE SAND</button>
+    <a class="btn btn-wave" href="https://codepen.io/Laura-Andreea-the-typescripter/pen/vEyRgqQ" target="_blank" rel="noopener">🌊 SURF RUN</a>
+  </div>
+</div>
+
+<!-- PAUSE -->
+<div class="modal" id="pause-modal">
+  <div class="modal-card">
+    <h3>Paused 🏖️</h3>
+    <p>The crabs are waiting...</p>
+    <div class="btns">
+      <button class="btn" id="resume-btn">RESUME</button>
+      <button class="btn btn-alt" id="menu-btn">MAIN MENU</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE CONTROLS -->
+<div id="mobile-controls">
+  <button class="touch-pad" id="pad-jump">JUMP</button>
+  <button class="touch-pad" id="pad-duck">DUCK</button>
+</div>
+
   <script>
-    if (!CanvasRenderingContext2D.prototype.roundRect) {
-      CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-        const radius = Math.min(r, w / 2, h / 2);
-        this.beginPath();
-        this.moveTo(x + radius, y);
-        this.arcTo(x + w, y, x + w, y + h, radius);
-        this.arcTo(x + w, y + h, x, y + h, radius);
-        this.arcTo(x, y + h, x, y, radius);
-        this.arcTo(x, y, x + w, y, radius);
-        this.closePath();
-        return this;
-      };
+
+(() => {
+  const BASE_LINK = 'https://codepen.io/Laura-Andreea-the-typescripter/pen/vEyRgqQ';
+
+  let W = window.innerWidth;
+  let H = window.innerHeight;
+  let GY = H * 0.72;
+  let AY = GY - 68;
+  let PX = W * 0.20;
+
+  const skyC = document.getElementById('sky-c');
+  const sandC = document.getElementById('sand-c');
+  const sky = skyC.getContext('2d');
+  const sand = sandC.getContext('2d');
+
+  const playerEl = document.getElementById('player');
+  const emS = document.getElementById('em-S');
+  const flash = document.getElementById('flash');
+
+  const scoreVal = document.getElementById('score-val');
+  const shellsVal = document.getElementById('shells-val');
+  const livesVal = document.getElementById('lives-val');
+  const spdN = document.getElementById('spd-n');
+  const spdBadge = document.getElementById('spd-badge');
+  const pauseBtn = document.getElementById('pause-btn');
+
+  const startScreen = document.getElementById('start-screen');
+  const overScreen = document.getElementById('over-screen');
+  const pauseModal = document.getElementById('pause-modal');
+  const bestPanel = document.getElementById('best-panel');
+  const collectionPanel = document.getElementById('collection-panel');
+  const finalS = document.getElementById('final-s');
+  const rankLine = document.getElementById('rank-line');
+  const shellsLine = document.getElementById('shells-line');
+  const leaderboard = document.getElementById('leaderboard');
+  const newRec = document.getElementById('new-rec');
+
+  const startBtn = document.getElementById('start-btn');
+  const retryBtn = document.getElementById('retry-btn');
+  const resumeBtn = document.getElementById('resume-btn');
+  const menuBtn = document.getElementById('menu-btn');
+  const padJump = document.getElementById('pad-jump');
+  const padDuck = document.getElementById('pad-duck');
+
+  let AC = null;
+  function getAC(){
+    if(!AC) try{ AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){}
+    return AC;
+  }
+  function tone(f,type='sine',dur=.12,vol=.14,fEnd){
+    const ctx=getAC(); if(!ctx)return;
+    const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.setValueAtTime(f,ctx.currentTime);
+    if(fEnd) o.frequency.exponentialRampToValueAtTime(Math.max(1,fEnd),ctx.currentTime+dur);
+    g.gain.setValueAtTime(vol,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+dur);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime+dur+.02);
+  }
+  function noize(dur=.15,vol=.18,cut=500){
+    const ctx=getAC(); if(!ctx)return;
+    const b=ctx.createBuffer(1,(ctx.sampleRate*dur)|0,ctx.sampleRate);
+    const d=b.getChannelData(0);
+    for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+    const src=ctx.createBufferSource(),flt=ctx.createBiquadFilter(),gn=ctx.createGain();
+    flt.type='lowpass';flt.frequency.value=cut; gn.gain.setValueAtTime(vol,ctx.currentTime);
+    gn.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+dur);
+    src.buffer=b; src.connect(flt); flt.connect(gn); gn.connect(ctx.destination); src.start();
+  }
+  const SFX={
+    jump:()=>tone(280,'square',.16,.13,520),
+    jump2:()=>{tone(380,'square',.12,.11,720);tone(500,'sine',.14,.08,820);},
+    land:()=>noize(.07,.1,1100),
+    hit:()=>{noize(.34,.5,180);tone(80,'sawtooth',.22,.1,45);},
+    coin:()=>tone(940,'sine',.16,.13,1380),
+    gem:()=>{tone(1100,'sine',.12,.12);tone(1400,'sine',.2,.1,1600);},
+    shield:()=>[440,660,880].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.2,.1),i*50)),
+    life:()=>[523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,'sine',.18,.12),i*70)),
+    speed:()=>{tone(440,'square',.06,.1,700);setTimeout(()=>tone(900,'square',.09,.09,1200),80);},
+    over:()=>{tone(200,'sawtooth',.3,.18,100);noize(.5,.25,200);}
+  };
+
+  const SK='shore-run-v2';
+  function loadSt(){ try{return JSON.parse(localStorage.getItem(SK)||'{}');} catch{return{};} }
+  let ST=Object.assign({bests:{classic:0,chill:0,blaze:0},totalShells:0,totalRuns:0,lb:[],collection:{shell:0,star:0,shield:0,speed:0,life:0}},loadSt());
+  if(!ST.bests) ST.bests={classic:0,chill:0,blaze:0};
+  if(!ST.collection) ST.collection={shell:0,star:0,shield:0,speed:0,life:0};
+  if(!ST.lb) ST.lb=[];
+  function saveSt(){ try{localStorage.setItem(SK,JSON.stringify(ST));} catch{} }
+
+  const MODES={
+    classic:{lives:3,spd0:4.2,spdCap:12,accel:.0007},
+    chill:{lives:5,spd0:2.9,spdCap:8,accel:.0004},
+    blaze:{lives:2,spd0:6.5,spdCap:16,accel:.001}
+  };
+  const RANKS=[
+    {min:2500,label:'🏆 LEGEND RUNNER'},
+    {min:1200,label:'🥇 SPRINTING PRO'},
+    {min:600,label:'🥈 SHELL CHASER'},
+    {min:250,label:'🥉 BEACH JOGGER'},
+    {min:0,label:'🏃 BEACH BUM'}
+  ];
+
+  let gs='menu', mode='classic', score=0, shells=0, lives=3, speed=4.2;
+  let frame=0, objects=[], floatEls=[], footprints=[], dustPuffs=[];
+  let spawnTimer=0, raf=0, lastT=0;
+
+  const P={y:GY,vy:0,grounded:true,jumps:0,ducking:false,inv:false,invT:0,shielded:false,shieldT:0,boostT:0};
+
+  function resize(){
+    W=window.innerWidth; H=window.innerHeight; GY=H*.72; AY=GY-68; PX=W*.2;
+    skyC.width=W; skyC.height=Math.ceil(H*.52); skyC.style.height='52%';
+    sandC.width=W; sandC.height=H; sandC.style.top='52%'; sandC.style.height='48%';
+    if(gs==='menu'){P.y=GY; placePlayer();}
+    drawSky(); drawSand();
+  }
+
+  function drawSky(){
+    sky.clearRect(0,0,skyC.width,skyC.height);
+    const h=skyC.height;
+    const grad=sky.createLinearGradient(0,0,0,h);
+    grad.addColorStop(0,'#48bce7'); grad.addColorStop(.55,'#a6dff2'); grad.addColorStop(1,'#dff6ff');
+    sky.fillStyle=grad; sky.fillRect(0,0,W,h);
+    sky.fillStyle='rgba(255,203,60,.9)';
+    sky.beginPath(); sky.arc(W*.82,h*.28,Math.max(24,W*.035),0,Math.PI*2); sky.fill();
+    for(let i=0;i<8;i++){
+      const x=(i*190 + (frame*.15))%(W+240)-120;
+      const y=34+(i%4)*32;
+      sky.fillStyle='rgba(255,255,255,.7)';
+      sky.beginPath();
+      sky.arc(x,y+10,18,0,Math.PI*2); sky.arc(x+24,y,25,0,Math.PI*2); sky.arc(x+52,y+12,19,0,Math.PI*2);
+      sky.roundRect(x-10,y+12,76,20,12); sky.fill();
     }
-
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-    const W = canvas.width;
-    const H = canvas.height;
-
-    const scoreEl = document.getElementById("score");
-    const shellsEl = document.getElementById("shells");
-    const energyEl = document.getElementById("energy");
-    const stageEl = document.getElementById("stage");
-    const startScreen = document.getElementById("startScreen");
-    const winScreen = document.getElementById("winScreen");
-    const winTitle = document.getElementById("winTitle");
-    const winText = document.getElementById("winText");
-    const startBtn = document.getElementById("startBtn");
-    const restartBtn = document.getElementById("restartBtn");
-    const leftBtn = document.getElementById("leftBtn");
-    const rightBtn = document.getElementById("rightBtn");
-    const actionBtn = document.getElementById("actionBtn");
-
-    const missionEls = {
-      shells: document.getElementById("m1"),
-      sunscreen: document.getElementById("m2"),
-      board: document.getElementById("m3"),
-      ocean: document.getElementById("m4"),
-      reef: document.getElementById("m5")
-    };
-
-    let raf;
-    let running = false;
-    let last = 0;
-
-    const keys = { left: false, right: false, action: false };
-
-    const state = {
-      score: 0,
-      shells: 0,
-      energy: 100,
-      sunscreen: false,
-      board: false,
-      ocean: false,
-      reefComplete: false,
-      phase: "beach",
-      time: 0,
-      oceanTime: 0,
-      message: "Collect 8 shells to prepare for the ocean",
-      messageTimer: 3,
-      waveUnlock: false,
-      hazardTimer: 0,
-      oceanShellTimer: 0
-    };
-
-    const player = {
-      x: 90,
-      y: 345,
-      w: 44,
-      h: 72,
-      vy: 0,
-      grounded: true,
-      facing: 1,
-      boardPose: false,
-      invincible: 0
-    };
-
-    let items = [];
-    let crabs = [];
-    let particles = [];
-    let clouds = [];
-    let birds = [];
-    let hazards = [];
-    let oceanShells = [];
-
-    function rand(min, max) { return Math.random() * (max - min) + min; }
-    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
-    function center(obj) { return { x: obj.x + obj.w / 2, y: obj.y + obj.h / 2 }; }
-    function distance(a, b) { const ca = center(a); const cb = center(b); return Math.hypot(ca.x - cb.x, ca.y - cb.y); }
-    function hit(a, b, pad = 0) {
-      return a.x - pad < b.x + b.w && a.x + a.w + pad > b.x && a.y - pad < b.y + b.h && a.y + a.h + pad > b.y;
+    for(let i=0;i<9;i++){
+      const x=(i*137 + frame*.45)%(W+80)-40, y=55+(i*31)%120, wing=Math.sin(frame*.06+i)*6;
+      sky.strokeStyle='rgba(58,28,0,.35)'; sky.lineWidth=2; sky.beginPath();
+      sky.moveTo(x-10,y); sky.quadraticCurveTo(x,y-wing,x+10,y); sky.quadraticCurveTo(x+20,y-wing,x+30,y); sky.stroke();
     }
+  }
 
-    function reset() {
-      Object.assign(state, {
-        score: 0,
-        shells: 0,
-        energy: 100,
-        sunscreen: false,
-        board: false,
-        ocean: false,
-        reefComplete: false,
-        phase: "beach",
-        time: 0,
-        oceanTime: 0,
-        message: "Collect 8 shells to prepare for the ocean",
-        messageTimer: 3,
-        waveUnlock: false,
-        hazardTimer: 1.2,
-        oceanShellTimer: 1.8
-      });
-      Object.assign(player, { x: 90, y: 345, vy: 0, grounded: true, facing: 1, boardPose: false, invincible: 0 });
-      items = [];
-      crabs = [];
-      particles = [];
-      hazards = [];
-      oceanShells = [];
-      createBeachObjects();
-      createClouds();
-      updateUI();
+  function drawSand(){
+    sand.clearRect(0,0,W,H);
+    const top=0;
+    const grad=sand.createLinearGradient(0,top,0,H);
+    grad.addColorStop(0,'rgba(250,232,197,1)'); grad.addColorStop(.45,'rgba(250,219,135,1)'); grad.addColorStop(1,'rgba(252,203,66,1)');
+    sand.fillStyle=grad; sand.fillRect(0,0,W,H);
+    sand.fillStyle='rgba(255,255,255,.22)';
+    for(let i=0;i<120;i++){
+      const x=(i*79 + frame*.12)%W, y=30+((i*43)%(H*.45));
+      sand.beginPath(); sand.arc(x,y,1.2,0,Math.PI*2); sand.fill();
     }
-
-    function createClouds() {
-      clouds = Array.from({ length: 7 }, () => ({ x: rand(0, W), y: rand(30, 145), s: rand(.7, 1.4), speed: rand(.12, .35) }));
-      birds = Array.from({ length: 8 }, () => ({ x: rand(0, W), y: rand(50, 170), speed: rand(.4, 1.1), flap: rand(0, Math.PI * 2) }));
-    }
-
-    function createBeachObjects() {
-      const shellSpots = [
-        [150, 350], [220, 410], [300, 345], [370, 400], [445, 365], [540, 415], [610, 350], [675, 405], [735, 360], [260, 382], [505, 338]
-      ];
-      shellSpots.forEach(([x, y]) => items.push({ type: "shell", x, y, w: 30, h: 26, collected: false, bob: rand(0, Math.PI * 2) }));
-      items.push({ type: "sunscreen", x: 455, y: 322, w: 38, h: 52, collected: false, bob: 0 });
-      items.push({ type: "board", x: 665, y: 326, w: 105, h: 34, collected: false, bob: 0 });
-      for (let i = 0; i < 3; i++) crabs.push({ x: rand(210, 650), y: rand(382, 420), w: 42, h: 28, dir: Math.random() > .5 ? 1 : -1, speed: rand(.45, .9) });
-    }
-
-    function start() {
-      reset();
-      running = true;
-      startScreen.classList.add("hidden");
-      winScreen.classList.add("hidden");
-      last = performance.now();
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(loop);
-    }
-
-    function completeGame() {
-      running = false;
-      state.reefComplete = true;
-      missionEls.reef.classList.add("done");
-      stageEl.textContent = "Complete";
-      winTitle.textContent = "Beach + Reef complete!";
-      winText.textContent = "You prepared on the sand, entered the water and survived the first Reef Rush run.";
-      winScreen.classList.remove("hidden");
-      cancelAnimationFrame(raf);
-    }
-
-    function updateUI() {
-      scoreEl.textContent = Math.floor(state.score);
-      shellsEl.textContent = state.shells;
-      energyEl.textContent = `${Math.max(0, Math.floor(state.energy))}%`;
-      stageEl.textContent = state.phase === "ocean" ? "Reef Rush" : state.waveUnlock ? "Shoreline" : "Beach";
-      missionEls.shells.classList.toggle("done", state.shells >= 8);
-      missionEls.sunscreen.classList.toggle("done", state.sunscreen);
-      missionEls.board.classList.toggle("done", state.board);
-      missionEls.ocean.classList.toggle("done", state.ocean);
-      missionEls.reef.classList.toggle("done", state.reefComplete);
-    }
-
-    function showMessage(text, duration = 2.2) {
-      state.message = text;
-      state.messageTimer = duration;
-    }
-
-    function jumpOrCollect() {
-      if (state.phase === "beach") {
-        const collected = collectNearbyItems();
-        if (!collected && player.grounded) jump();
-      } else {
-        jump();
-      }
-    }
-
-    function jump() {
-      if (player.grounded) {
-        player.vy = state.phase === "ocean" ? -13.3 : -12;
-        player.grounded = false;
-        addParticles(player.x + player.w / 2, player.y + player.h, "#ffffff", 10);
-      }
-    }
-
-    function collectNearbyItems() {
-      let collectedSomething = false;
-      items.forEach(item => {
-        if (!item.collected && (hit(player, item, 28) || distance(player, item) < 68)) {
-          collectItem(item);
-          collectedSomething = true;
-        }
-      });
-      return collectedSomething;
-    }
-
-    function collectItem(item) {
-      item.collected = true;
-      if (item.type === "shell") {
-        state.shells++;
-        state.score += 80;
-        showMessage(`Shell collected! ${Math.min(state.shells, 8)}/8`);
-        addParticles(item.x + item.w / 2, item.y, "#fff2bd", 12);
-      }
-      if (item.type === "sunscreen") {
-        state.sunscreen = true;
-        state.energy = clamp(state.energy + 20, 0, 100);
-        state.score += 180;
-        showMessage("Sunscreen found! Energy protected.");
-        addParticles(item.x + item.w / 2, item.y, "#ff8f3d", 16);
-      }
-      if (item.type === "board") {
-        state.board = true;
-        state.score += 250;
-        showMessage("Surfboard ready! Reach the water line.");
-        addParticles(item.x + item.w / 2, item.y, "#00b8c8", 18);
-      }
-    }
-
-    function enterOceanStage() {
-      state.phase = "ocean";
-      state.ocean = true;
-      state.oceanTime = 0;
-      player.x = 110;
-      player.y = 334;
-      player.vy = 0;
-      player.boardPose = true;
-      hazards = [];
-      oceanShells = [];
-      showMessage("Reef Rush started! Dodge reefs and collect bonus shells.", 3);
-      addParticles(820, 330, "#40c9d8", 34);
-    }
-
-    function addParticles(x, y, color, count = 12) {
-      for (let i = 0; i < count; i++) particles.push({ x, y, vx: rand(-2, 2), vy: rand(-3, -.5), r: rand(2, 5), life: rand(.4, 1), color });
-    }
-
-    function spawnHazard() {
-      const type = Math.random() > .45 ? "reef" : "buoy";
-      hazards.push({ type, x: W + 40, y: type === "reef" ? rand(355, 410) : rand(315, 380), w: type === "reef" ? 62 : 42, h: type === "reef" ? 56 : 44, bob: rand(0, 10) });
-    }
-
-    function spawnOceanShell() {
-      oceanShells.push({ x: W + 30, y: rand(240, 345), w: 28, h: 26, spin: rand(0, Math.PI * 2), collected: false });
-    }
-
-    function update(dt) {
-      const d = dt / 16.67;
-      state.time += dt / 1000;
-      state.score += state.phase === "ocean" ? .16 * d : .08 * d;
-      state.energy -= state.phase === "ocean" ? .018 * d : .012 * d;
-      if (state.messageTimer > 0) state.messageTimer -= dt / 1000;
-      if (player.invincible > 0) player.invincible -= dt / 1000;
-
-      if (keys.left) { player.x -= (state.phase === "ocean" ? 6.4 : 5.4) * d; player.facing = -1; }
-      if (keys.right) { player.x += (state.phase === "ocean" ? 6.4 : 5.4) * d; player.facing = 1; }
-      if (keys.action) { jumpOrCollect(); keys.action = false; }
-
-      player.x = clamp(player.x, 25, W - player.w - 25);
-      player.vy += (state.phase === "ocean" ? .62 : .65) * d;
-      player.y += player.vy * d;
-      const ground = state.phase === "ocean" ? 362 + Math.sin(state.time * 3) * 6 : 390;
-      if (player.y >= ground - player.h) { player.y = ground - player.h; player.vy = 0; player.grounded = true; } else player.grounded = false;
-
-      clouds.forEach(c => { c.x += c.speed * d; if (c.x > W + 120) c.x = -140; });
-      birds.forEach(b => { b.x += b.speed * d; b.flap += .12 * d; if (b.x > W + 40) b.x = -40; });
-      particles.forEach(p => { p.x += p.vx * d; p.y += p.vy * d; p.vy += .12 * d; p.life -= .026 * d; });
-      particles = particles.filter(p => p.life > 0);
-
-      if (state.phase === "beach") updateBeach(d);
-      else updateOcean(dt, d);
-
-      if (state.energy <= 0) {
-        state.energy = 100;
-        state.score = Math.max(0, state.score - 200);
-        if (state.phase === "beach") player.x = 90;
-        else player.x = 110;
-        showMessage("You got tired. Restored with beach energy.", 2.2);
-      }
-
-      updateUI();
-    }
-
-    function updateBeach(d) {
-      collectNearbyItems();
-      crabs.forEach(crab => {
-        crab.x += crab.dir * crab.speed * d;
-        if (crab.x < 120 || crab.x > 710) crab.dir *= -1;
-        if (hit(player, crab, 5)) {
-          state.energy -= .45 * d;
-          if (state.messageTimer <= 0) showMessage("Careful! Crabs drain your energy.", 1.2);
-        }
-      });
-      items.forEach(item => item.bob += .04 * d);
-      const beachReady = state.shells >= 8 && state.sunscreen && state.board;
-      if (beachReady && !state.waveUnlock) {
-        state.waveUnlock = true;
-        showMessage("Ocean unlocked! Go to the shoreline on the right.", 3);
-      }
-      if (state.waveUnlock && player.x > 805) enterOceanStage();
-    }
-
-    function updateOcean(dt, d) {
-      state.oceanTime += dt / 1000;
-      const speed = (5.3 + state.oceanTime * .035) * d;
-      state.hazardTimer -= dt / 1000;
-      state.oceanShellTimer -= dt / 1000;
-      if (state.hazardTimer <= 0) { spawnHazard(); state.hazardTimer = rand(.9, 1.45); }
-      if (state.oceanShellTimer <= 0) { spawnOceanShell(); state.oceanShellTimer = rand(1.1, 1.9); }
-
-      hazards.forEach(h => {
-        h.x -= speed;
-        h.bob += .05 * d;
-        if (hit(player, h, -4) && player.invincible <= 0) {
-          player.invincible = 1.2;
-          state.energy -= 22;
-          state.score = Math.max(0, state.score - 80);
-          showMessage("Reef hit! Keep riding.", 1.4);
-          addParticles(player.x + player.w / 2, player.y + player.h / 2, "#ff5e7e", 18);
-        }
-      });
-      hazards = hazards.filter(h => h.x > -90);
-
-      oceanShells.forEach(s => {
-        s.x -= speed;
-        s.spin += .12 * d;
-        if (!s.collected && hit(player, s, 18)) {
-          s.collected = true;
-          state.shells += 1;
-          state.score += 60;
-          addParticles(s.x, s.y, "#fff2bd", 10);
-        }
-      });
-      oceanShells = oceanShells.filter(s => !s.collected && s.x > -70);
-
-      if (state.oceanTime > 35) completeGame();
-    }
-
-    function drawSky() {
-      const sky = ctx.createLinearGradient(0, 0, 0, H);
-      if (state.phase === "ocean") {
-        sky.addColorStop(0, "#64d7ff");
-        sky.addColorStop(.5, "#7defff");
-        sky.addColorStop(1, "#0a7891");
-      } else {
-        sky.addColorStop(0, "#89ddff");
-        sky.addColorStop(.45, "#ffe7b0");
-        sky.addColorStop(1, "#f8c66a");
-      }
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, W, H);
-      ctx.fillStyle = "rgba(255,188,74,.9)";
-      ctx.beginPath(); ctx.arc(760, 86, 44, 0, Math.PI * 2); ctx.fill();
-      clouds.forEach(drawCloud);
-      birds.forEach(drawBird);
-    }
-
-    function drawCloud(cloud) {
-      ctx.save(); ctx.translate(cloud.x, cloud.y); ctx.scale(cloud.s, cloud.s);
-      ctx.fillStyle = "rgba(255,255,255,.72)";
-      ctx.beginPath(); ctx.arc(0, 12, 24, 0, Math.PI * 2); ctx.arc(26, 4, 32, 0, Math.PI * 2); ctx.arc(58, 14, 25, 0, Math.PI * 2); ctx.roundRect(-14, 14, 88, 24, 16); ctx.fill();
-      ctx.restore();
-    }
-
-    function drawBird(bird) {
-      const wing = Math.sin(bird.flap) * 5;
-      ctx.strokeStyle = "rgba(24,49,69,.56)"; ctx.lineWidth = 2; ctx.beginPath();
-      ctx.moveTo(bird.x - 8, bird.y); ctx.quadraticCurveTo(bird.x, bird.y - wing, bird.x + 8, bird.y); ctx.quadraticCurveTo(bird.x + 16, bird.y - wing, bird.x + 24, bird.y); ctx.stroke();
-    }
-
-    function drawBeach() {
-      ctx.fillStyle = "#f6d184"; ctx.fillRect(0, 285, W, H - 285);
-      ctx.fillStyle = "rgba(255,255,255,.28)";
-      for (let i = 0; i < 70; i++) { const x = (i * 67 + state.time * 8) % W; const y = 305 + ((i * 31) % 160); ctx.beginPath(); ctx.arc(x, y, 1.3, 0, Math.PI * 2); ctx.fill(); }
-      ctx.fillStyle = "rgba(6,94,138,.85)"; ctx.beginPath(); ctx.moveTo(820, 245);
-      for (let x = 820; x <= W; x += 10) ctx.lineTo(x, 245 + Math.sin(x * .05 + state.time * 3) * 12);
-      ctx.lineTo(W, H); ctx.lineTo(820, H); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 4; ctx.beginPath();
-      for (let x = 805; x <= W; x += 10) { const y = 258 + Math.sin(x * .05 + state.time * 3) * 12; if (x === 805) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
-      ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.fillRect(805, 0, 2, H);
-    }
-
-    function drawOcean() {
-      const water = ctx.createLinearGradient(0, 240, 0, H);
-      water.addColorStop(0, "rgba(64,201,216,.45)");
-      water.addColorStop(.55, "rgba(6,94,138,.8)");
-      water.addColorStop(1, "rgba(4,49,86,.96)");
-      ctx.fillStyle = water;
-      ctx.beginPath(); ctx.moveTo(0, 290);
-      for (let x = 0; x <= W; x += 14) ctx.lineTo(x, 290 + Math.sin(x * .026 + state.time * 3.2) * 16 + Math.sin(x * .06 + state.time * 2) * 5);
-      ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,.46)"; ctx.lineWidth = 3;
-      for (let row = 0; row < 5; row++) { ctx.beginPath(); for (let x = -80; x <= W + 60; x += 20) { const px = x + (state.time * (30 + row * 8)) % 100; const py = 330 + row * 32 + Math.sin(px * .05 + state.time * 4) * 6; if (x === -80) ctx.moveTo(px, py); else ctx.lineTo(px, py); } ctx.stroke(); }
-    }
-
-    function drawPalm() {
-      ctx.save(); ctx.translate(95, 260); ctx.strokeStyle = "#8f5d2d"; ctx.lineWidth = 18; ctx.beginPath(); ctx.moveTo(0, 140); ctx.quadraticCurveTo(20, 50, 4, 0); ctx.stroke();
-      ctx.fillStyle = "#2ca66f"; for (let i = 0; i < 7; i++) { ctx.save(); ctx.rotate((i - 3) * .42); ctx.beginPath(); ctx.ellipse(30, -4, 56, 13, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); }
-      ctx.fillStyle = "#8a5524"; ctx.beginPath(); ctx.arc(0, 6, 10, 0, Math.PI * 2); ctx.arc(14, 7, 9, 0, Math.PI * 2); ctx.arc(6, 18, 9, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    }
-
-    function drawItem(item) {
-      if (item.collected) return;
-      const bob = Math.sin(item.bob) * 4;
-      ctx.save(); ctx.translate(item.x + item.w / 2, item.y + item.h / 2 + bob);
-      if (item.type === "shell") { ctx.fillStyle = "#fff2bd"; ctx.beginPath(); ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#d78d4e"; ctx.lineWidth = 2; for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(i * 5, -8); ctx.stroke(); } }
-      if (item.type === "sunscreen") { ctx.fillStyle = "#ff8f3d"; ctx.beginPath(); ctx.roundRect(-15, -24, 30, 48, 8); ctx.fill(); ctx.fillStyle = "#fff"; ctx.fillRect(-9, -8, 18, 18); ctx.fillStyle = "#ffcf63"; ctx.beginPath(); ctx.arc(0, 1, 5, 0, Math.PI * 2); ctx.fill(); }
-      if (item.type === "board") { ctx.rotate(-.16); ctx.fillStyle = "#00b8c8"; ctx.beginPath(); ctx.ellipse(0, 0, 54, 16, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#fff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-38, 0); ctx.lineTo(38, 0); ctx.stroke(); }
-      ctx.restore();
-    }
-
-    function drawCrab(crab) {
-      ctx.save(); ctx.translate(crab.x + crab.w / 2, crab.y + crab.h / 2); ctx.fillStyle = "#e85b3e"; ctx.beginPath(); ctx.ellipse(0, 0, 18, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#e85b3e"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-16, -2); ctx.lineTo(-30, -12); ctx.moveTo(16, -2); ctx.lineTo(30, -12); ctx.moveTo(-14, 6); ctx.lineTo(-28, 14); ctx.moveTo(14, 6); ctx.lineTo(28, 14); ctx.stroke(); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-6, -12, 4, 0, Math.PI * 2); ctx.arc(6, -12, 4, 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = "#183145"; ctx.beginPath(); ctx.arc(-6, -12, 1.6, 0, Math.PI * 2); ctx.arc(6, -12, 1.6, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    }
-
-    function drawPlayer() {
-      ctx.save();
-      if (player.invincible > 0 && Math.floor(performance.now() / 90) % 2 === 0) ctx.globalAlpha = .55;
-      ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
-      ctx.scale(player.facing, 1);
-      if (state.phase === "ocean" || player.boardPose) {
-        ctx.fillStyle = "#00b8c8"; ctx.beginPath(); ctx.ellipse(2, 39, 58, 13, -.08, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-38, 38); ctx.lineTo(42, 38); ctx.stroke();
-      }
-      ctx.fillStyle = "#ffbd8f"; ctx.beginPath(); ctx.arc(0, -26, 13, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#6d3b1f"; ctx.beginPath(); ctx.arc(-4, -35, 10, Math.PI, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = state.phase === "ocean" ? "#2de1ff" : "#ff8f3d"; ctx.beginPath(); ctx.roundRect(-15, -12, 30, 36, 10); ctx.fill();
-      ctx.strokeStyle = "#ffbd8f"; ctx.lineWidth = 6; ctx.lineCap = "round"; ctx.beginPath();
-      ctx.moveTo(-10, -2); ctx.lineTo(-28, 12); ctx.moveTo(10, -2); ctx.lineTo(28, 10);
-      ctx.moveTo(-7, 22); ctx.lineTo(-20, 44); ctx.moveTo(7, 22); ctx.lineTo(20, 44); ctx.stroke();
-      ctx.fillStyle = "#183145"; ctx.beginPath(); ctx.arc(-4, -28, 2, 0, Math.PI * 2); ctx.arc(5, -28, 2, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "rgba(24,49,69,.9)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(2, -22, 4, 0, Math.PI); ctx.stroke();
-      if (state.sunscreen) { ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.beginPath(); ctx.arc(0, -18, 3, 0, Math.PI * 2); ctx.fill(); }
-      if (state.board && state.phase === "beach") { ctx.strokeStyle = "#00b8c8"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(-24, -4); ctx.lineTo(28, -20); ctx.stroke(); }
-      ctx.restore();
-    }
-
-    function drawHazard(h) {
-      ctx.save(); ctx.translate(h.x + h.w / 2, h.y + h.h / 2 + Math.sin(h.bob) * 5);
-      if (h.type === "reef") { ctx.fillStyle = "#ff5e7e"; ctx.beginPath(); ctx.moveTo(-30, 24); ctx.lineTo(-12, -24); ctx.lineTo(2, 10); ctx.lineTo(18, -20); ctx.lineTo(30, 24); ctx.closePath(); ctx.fill(); }
-      else { ctx.fillStyle = "#ffce5d"; ctx.beginPath(); ctx.roundRect(-20, -22, 40, 44, 12); ctx.fill(); ctx.fillStyle = "#ff5e7e"; ctx.fillRect(-20, -4, 40, 10); }
-      ctx.restore();
-    }
-
-    function drawOceanShell(s) {
-      ctx.save(); ctx.translate(s.x + s.w / 2, s.y + s.h / 2); ctx.scale(Math.cos(s.spin) * .45 + .55, 1); ctx.fillStyle = "#fff2bd"; ctx.beginPath(); ctx.ellipse(0, 0, 15, 10, 0, 0, Math.PI * 2); ctx.fill(); ctx.strokeStyle = "#d78d4e"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-8, -7); ctx.moveTo(0, 0); ctx.lineTo(8, -7); ctx.stroke(); ctx.restore();
-    }
-
-    function drawParticles() {
-      particles.forEach(p => { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill(); });
-      ctx.globalAlpha = 1;
-    }
-
-    function drawMessage() {
-      if (state.messageTimer <= 0) return;
-      ctx.save(); ctx.globalAlpha = clamp(state.messageTimer, 0, 1); ctx.fillStyle = "rgba(255,255,255,.78)"; ctx.beginPath(); ctx.roundRect(180, 24, 540, 48, 18); ctx.fill(); ctx.fillStyle = "#183145"; ctx.font = "800 18px Inter, system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(state.message, W / 2, 48); ctx.restore();
-    }
-
-    function drawOceanArrow() {
-      if (!state.waveUnlock || state.phase !== "beach") return;
-      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.beginPath(); ctx.roundRect(718, 94, 154, 46, 18); ctx.fill(); ctx.fillStyle = "#065e8a"; ctx.font = "900 18px Inter, system-ui"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("Go to ocean →", 795, 117); ctx.restore();
-    }
-
-    function drawOceanTimer() {
-      if (state.phase !== "ocean") return;
-      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.78)"; ctx.beginPath(); ctx.roundRect(18, 18, 170, 38, 16); ctx.fill(); ctx.fillStyle = "#065e8a"; ctx.font = "900 16px Inter, system-ui"; ctx.fillText(`Reef Rush ${Math.ceil(35 - state.oceanTime)}s`, 34, 43); ctx.restore();
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, W, H);
-      drawSky();
-      if (state.phase === "beach") { drawBeach(); drawPalm(); items.forEach(drawItem); crabs.forEach(drawCrab); }
-      else { drawOcean(); hazards.forEach(drawHazard); oceanShells.forEach(drawOceanShell); }
-      drawPlayer(); drawParticles(); drawMessage(); drawOceanArrow(); drawOceanTimer();
-      ctx.fillStyle = "rgba(24,49,69,.55)"; ctx.font = "800 13px Inter, system-ui"; ctx.textAlign = "left"; ctx.fillText(state.phase === "beach" ? "Beach Camp" : "Reef Line", 38, 438); ctx.textAlign = "right"; ctx.fillText(state.phase === "beach" ? "Shoreline / Water Entry" : "Ocean Stage", 870, 438);
-    }
-
-    function loop(now) {
-      if (!running) return;
-      const dt = Math.min(34, now - last);
-      last = now;
-      update(dt);
-      draw();
-      raf = requestAnimationFrame(loop);
-    }
-
-    function setHoldButton(button, key) {
-      button.addEventListener("pointerdown", event => { event.preventDefault(); keys[key] = true; });
-      button.addEventListener("pointerup", () => { keys[key] = false; });
-      button.addEventListener("pointercancel", () => { keys[key] = false; });
-      button.addEventListener("pointerleave", () => { keys[key] = false; });
-    }
-
-    document.addEventListener("keydown", event => {
-      const key = event.key.toLowerCase();
-      if (key === "arrowleft" || key === "a") keys.left = true;
-      if (key === "arrowright" || key === "d") keys.right = true;
-      if (key === " " || key === "arrowup" || key === "w") { event.preventDefault(); keys.action = true; }
+    footprints=footprints.filter(f=>f.a>0);
+    footprints.forEach(f=>{
+      f.a-=.002;
+      sand.save(); sand.globalAlpha=f.a; sand.fillStyle='rgba(90,48,0,.18)';
+      sand.beginPath(); sand.ellipse(f.x,f.y,8,4,f.r,0,Math.PI*2); sand.fill(); sand.restore();
     });
-
-    document.addEventListener("keyup", event => {
-      const key = event.key.toLowerCase();
-      if (key === "arrowleft" || key === "a") keys.left = false;
-      if (key === "arrowright" || key === "d") keys.right = false;
+    dustPuffs=dustPuffs.filter(d=>d.life>0);
+    dustPuffs.forEach(d=>{
+      d.life-=.015; d.x-=speed*.45; d.y+=d.vy; d.r+=.15;
+      sand.save(); sand.globalAlpha=Math.max(0,d.life); sand.fillStyle='rgba(255,255,255,.42)';
+      sand.beginPath(); sand.arc(d.x,d.y,d.r,0,Math.PI*2); sand.fill(); sand.restore();
     });
+  }
 
-    setHoldButton(leftBtn, "left");
-    setHoldButton(rightBtn, "right");
-    actionBtn.addEventListener("pointerdown", event => { event.preventDefault(); keys.action = true; });
-    startBtn.addEventListener("click", start);
-    restartBtn.addEventListener("click", start);
+  function renderPanels(){
+    bestPanel.innerHTML=Object.keys(MODES).map(k=>`<div class="panel-line"><span>${k}</span><strong>${ST.bests[k]||0}</strong></div>`).join('');
+    collectionPanel.innerHTML=[
+      ['🐚 Shells',ST.totalShells||0],
+      ['⭐ Stars',ST.collection.star||0],
+      ['🕶️ Shields',ST.collection.shield||0],
+      ['⚡ Boosts',ST.collection.speed||0],
+      ['❤️ Hearts',ST.collection.life||0]
+    ].map(([a,b])=>`<div class="panel-line"><span>${a}</span><strong>${b}</strong></div>`).join('');
+  }
 
-    reset();
-    draw();
+  function setMode(next){
+    mode=next;
+    document.querySelectorAll('.mode-card').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+    renderPanels();
+  }
+
+  function start(){
+    const m=MODES[mode];
+    gs='play'; score=0; shells=0; lives=m.lives; speed=m.spd0; frame=0; spawnTimer=30;
+    objects.forEach(o=>o.el.remove()); objects=[];
+    floatEls.forEach(f=>f.remove()); floatEls=[];
+    P.y=GY; P.vy=0; P.grounded=true; P.jumps=0; P.ducking=false; P.inv=false; P.invT=0; P.shielded=false; P.shieldT=0; P.boostT=0;
+    startScreen.classList.add('off'); overScreen.classList.add('off'); pauseModal.classList.remove('on');
+    pauseBtn.style.display='block'; spdBadge.style.display='block';
+    updateHud(); placePlayer(); lastT=performance.now(); cancelAnimationFrame(raf); raf=requestAnimationFrame(loop);
+  }
+
+  function backToMenu(){
+    gs='menu'; cancelAnimationFrame(raf); objects.forEach(o=>o.el.remove()); objects=[];
+    startScreen.classList.remove('off'); overScreen.classList.add('off'); pauseModal.classList.remove('on');
+    pauseBtn.style.display='none'; spdBadge.style.display='none'; renderPanels(); P.y=GY; placePlayer();
+  }
+
+  function pause(){
+    if(gs!=='play')return;
+    gs='pause'; pauseModal.classList.add('on'); pauseBtn.textContent='▶';
+  }
+  function resume(){
+    if(gs!=='pause')return;
+    gs='play'; pauseModal.classList.remove('on'); pauseBtn.textContent='Ⅱ'; lastT=performance.now(); raf=requestAnimationFrame(loop);
+  }
+
+  function jump(){
+    if(gs!=='play')return;
+    if(P.ducking){P.ducking=false; playerEl.classList.remove('duck');}
+    if(P.grounded || P.jumps<2){
+      P.vy=P.grounded?-18:-15;
+      P.grounded=false; P.jumps++;
+      emS.classList.remove('spin'); void emS.offsetWidth; emS.classList.add('spin');
+      (P.jumps===1?SFX.jump:SFX.jump2)();
+    }
+  }
+  function duck(on=true){
+    if(gs!=='play')return;
+    P.ducking=on;
+    playerEl.classList.toggle('duck',on);
+  }
+
+  function placePlayer(){
+    playerEl.style.left=PX+'px';
+    playerEl.style.top=P.y+'px';
+    playerEl.classList.toggle('inv',P.inv);
+    playerEl.classList.toggle('shielded',P.shielded);
+  }
+
+  function updateHud(){
+    scoreVal.textContent=Math.floor(score);
+    shellsVal.textContent='🐚 '+shells;
+    livesVal.textContent='🤙'.repeat(Math.max(0,lives));
+    spdN.textContent=(speed/MODES[mode].spd0).toFixed(1);
+  }
+
+  function spawn(){
+    const roll=Math.random();
+    let type, emoji, cls, y, w, h, effect=null;
+    if(roll<.46){
+      type=Math.random()<.66?'crab':'eagle'; cls='obs';
+      emoji=type==='crab'?'🦀':'🦅'; y=type==='crab'?GY-18:AY; w=54; h=42;
+    } else if(roll<.80){
+      type=Math.random()<.82?'shell':'star'; cls='col';
+      emoji=type==='shell'?'🐚':'⭐'; y=Math.random()<.55?GY-46:GY-115; w=38; h=38; effect=type;
+    } else {
+      const p=['shield','speed','life'][Math.floor(Math.random()*3)];
+      type=p; cls='pup'; emoji=p==='shield'?'🕶️':p==='speed'?'⚡':'❤️'; y=Math.random()<.5?GY-70:GY-135; w=44; h=44; effect=p;
+    }
+    const el=document.createElement('span');
+    el.className=cls; el.textContent=emoji; document.body.appendChild(el);
+    objects.push({type,el,x:W+70,y,w,h,hit:false,effect});
+  }
+
+  function objRect(o){return {left:o.x-o.w/2,right:o.x+o.w/2,top:o.y-o.h/2,bottom:o.y+o.h/2};}
+  function playerRect(){
+    const duck= P.ducking;
+    return {left:PX-36,right:PX+36,top:P.y-(duck?28:72),bottom:P.y+(duck?12:8)};
+  }
+  function intersects(a,b){return a.left<b.right && a.right>b.left && a.top<b.bottom && a.bottom>b.top;}
+
+  function collect(o){
+    o.hit=true; o.el.remove();
+    if(o.type==='shell'){shells++; score+=80; ST.totalShells++; ST.collection.shell=(ST.collection.shell||0)+1; float('+80 🐚',o.x,o.y); SFX.coin();}
+    if(o.type==='star'){score+=220; ST.collection.star=(ST.collection.star||0)+1; float('+220 ⭐',o.x,o.y); SFX.gem();}
+    if(o.type==='shield'){P.shielded=true; P.shieldT=6500; ST.collection.shield=(ST.collection.shield||0)+1; float('SHIELD',o.x,o.y); SFX.shield();}
+    if(o.type==='speed'){P.boostT=4800; ST.collection.speed=(ST.collection.speed||0)+1; float('SPEED',o.x,o.y); SFX.speed();}
+    if(o.type==='life'){lives=Math.min(5,lives+1); ST.collection.life=(ST.collection.life||0)+1; float('+1 LIFE',o.x,o.y); SFX.life();}
+    saveSt(); updateHud();
+  }
+
+  function damage(){
+    if(P.inv)return;
+    if(P.shielded){
+      P.shielded=false; P.shieldT=0; P.inv=true; P.invT=900; float('SAVED!',PX,P.y-80); flashHit(); SFX.shield(); return;
+    }
+    lives--; updateHud(); P.inv=true; P.invT=1100; flashHit(); SFX.hit();
+    if(lives<=0) gameOver();
+  }
+
+  function flashHit(){
+    flash.classList.remove('on'); void flash.offsetWidth; flash.classList.add('on');
+    document.documentElement.classList.remove('shake'); void document.documentElement.offsetWidth; document.documentElement.classList.add('shake');
+  }
+
+  function float(txt,x,y){
+    const el=document.createElement('span'); el.className='float-txt'; el.textContent=txt; el.style.left=x+'px'; el.style.top=y+'px'; document.body.appendChild(el);
+    setTimeout(()=>el.remove(),950);
+  }
+
+  function gameOver(){
+    gs='over'; cancelAnimationFrame(raf); ST.totalRuns++;
+    const sc=Math.floor(score); const old=ST.bests[mode]||0; const rec=sc>old;
+    if(rec) ST.bests[mode]=sc;
+    ST.lb.push({mode,score:sc,shells,at:Date.now()}); ST.lb=ST.lb.sort((a,b)=>b.score-a.score).slice(0,5);
+    saveSt(); SFX.over();
+    finalS.textContent=sc; shellsLine.textContent='Shells: '+shells;
+    rankLine.textContent=(RANKS.find(r=>sc>=r.min)||RANKS[RANKS.length-1]).label;
+    newRec.classList.toggle('off',!rec);
+    leaderboard.innerHTML=ST.lb.map((r,i)=>`<div class="lr ${r.score===sc?'me':''}"><span>#${i+1} ${r.mode}</span><strong>${r.score}</strong></div>`).join('');
+    overScreen.classList.remove('off'); pauseBtn.style.display='none'; spdBadge.style.display='none'; renderPanels();
+  }
+
+  function loop(t){
+    if(gs!=='play')return;
+    const dt=Math.min(32,t-lastT); lastT=t; frame++;
+    drawSky(); drawSand();
+
+    const m=MODES[mode];
+    speed=Math.min(m.spdCap, speed + m.accel*dt*(P.boostT>0?2.2:1));
+    const realSpeed=P.boostT>0?speed*1.45:speed;
+    score += realSpeed*.12;
+
+    if(!P.grounded){P.vy+=.95; P.y+=P.vy;}
+    if(P.y>=GY){ if(!P.grounded)SFX.land(); P.y=GY; P.vy=0; P.grounded=true; P.jumps=0; }
+    if(P.grounded && frame%10===0){footprints.push({x:PX-18+Math.random()*28,y:GY+18+Math.random()*6,r:Math.random()*.5,a:.7});}
+    if(P.grounded && frame%5===0){dustPuffs.push({x:PX-34,y:GY+16,vy:Math.random()*.3,r:2+Math.random()*3,life:.5});}
+
+    if(P.inv){P.invT-=dt; if(P.invT<=0)P.inv=false;}
+    if(P.shielded){P.shieldT-=dt; if(P.shieldT<=0)P.shielded=false;}
+    if(P.boostT>0)P.boostT-=dt;
+
+    spawnTimer-=realSpeed;
+    if(spawnTimer<=0){spawn(); spawnTimer=90+Math.random()*95-Math.min(45,speed*3);}
+
+    const pr=playerRect();
+    objects.forEach(o=>{
+      o.x-=realSpeed;
+      o.el.style.left=o.x+'px'; o.el.style.top=o.y+'px';
+      if(!o.hit && intersects(pr,objRect(o))){
+        if(o.el.classList.contains('obs')) damage();
+        else collect(o);
+        o.hit=true;
+      }
+    });
+    objects=objects.filter(o=>{const keep=o.x>-80 && !o.hit; if(!keep && o.el.parentNode)o.el.remove(); return keep;});
+
+    placePlayer(); updateHud();
+    raf=requestAnimationFrame(loop);
+  }
+
+  window.addEventListener('resize', resize);
+  document.querySelectorAll('.mode-card').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.mode)));
+  startBtn.addEventListener('click',start);
+  retryBtn.addEventListener('click',start);
+  pauseBtn.addEventListener('click',()=>gs==='pause'?resume():pause());
+  resumeBtn.addEventListener('click',resume);
+  menuBtn.addEventListener('click',backToMenu);
+
+  document.addEventListener('keydown',e=>{
+    const k=e.key.toLowerCase();
+    if([' ','arrowup','w'].includes(k)){e.preventDefault(); jump();}
+    if(['arrowdown','s'].includes(k)){e.preventDefault(); duck(true);}
+    if(k==='p') gs==='pause'?resume():pause();
+  });
+  document.addEventListener('keyup',e=>{
+    const k=e.key.toLowerCase();
+    if(['arrowdown','s'].includes(k)) duck(false);
+  });
+
+  padJump.addEventListener('pointerdown',e=>{e.preventDefault();jump();});
+  padDuck.addEventListener('pointerdown',e=>{e.preventDefault();duck(true);});
+  padDuck.addEventListener('pointerup',()=>duck(false));
+  padDuck.addEventListener('pointercancel',()=>duck(false));
+
+  let sy=0;
+  document.addEventListener('pointerdown',e=>{sy=e.clientY;});
+  document.addEventListener('pointerup',e=>{
+    const dy=e.clientY-sy;
+    if(dy>35) {duck(true); setTimeout(()=>duck(false),420);}
+    else if(gs==='play') jump();
+  });
+
+  renderPanels(); resize(); placePlayer();
+})();
+
   </script>
 </body>
 </html>
