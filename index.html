@@ -1,0 +1,144 @@
+<div class="app">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">CodePen Challenge · Surf Run Continuation</p>
+      <h1>Surf Run 2: Reef Rush 🌊🏄‍♀️</h1>
+      <p class="subtitle">
+        Ride the neon reef, dodge hazards, collect shells and survive the tide.
+      </p>
+    </div>
+
+    <div class="top-actions">
+      <button id="soundBtn" class="icon-btn" type="button">🔊</button>
+      <button id="themeBtn" class="icon-btn" type="button">🌙</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="game-card">
+      <div class="hud">
+        <div>
+          <span>Score</span>
+          <strong id="score">0</strong>
+        </div>
+        <div>
+          <span>Best</span>
+          <strong id="best">0</strong>
+        </div>
+        <div>
+          <span>Shells</span>
+          <strong id="coins">0</strong>
+        </div>
+        <div>
+          <span>Combo</span>
+          <strong id="combo">x1</strong>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="gameCanvas" width="900" height="520"></canvas>
+
+        <div id="startScreen" class="overlay">
+          <div class="panel">
+            <p class="pill">New chapter</p>
+            <h2>Reef Rush</h2>
+            <p>
+              A sequel level for Surf Run: faster waves, glowing reefs,
+              floating shells and tide traps.
+            </p>
+
+            <div class="mode-grid">
+              <button class="mode active" data-mode="classic" type="button">
+                <strong>Classic</strong>
+                <span>Survive & score</span>
+              </button>
+              <button class="mode" data-mode="time" type="button">
+                <strong>Time Attack</strong>
+                <span>90 seconds</span>
+              </button>
+              <button class="mode" data-mode="zen" type="button">
+                <strong>Zen</strong>
+                <span>No damage</span>
+              </button>
+              <button class="mode" data-mode="storm" type="button">
+                <strong>Storm Tide</strong>
+                <span>Hard mode</span>
+              </button>
+            </div>
+
+            <button id="startBtn" class="primary-btn" type="button">
+              Start Surfing
+            </button>
+          </div>
+        </div>
+
+        <div id="gameOverScreen" class="overlay hidden">
+          <div class="panel">
+            <p class="pill danger">Run finished</p>
+            <h2 id="resultTitle">Wipeout!</h2>
+            <p id="resultText">You reached the reef line.</p>
+
+            <div class="result-grid">
+              <div>
+                <span>Score</span>
+                <strong id="finalScore">0</strong>
+              </div>
+              <div>
+                <span>Shells</span>
+                <strong id="finalCoins">0</strong>
+              </div>
+              <div>
+                <span>Wave</span>
+                <strong id="finalWave">1</strong>
+              </div>
+            </div>
+
+            <button id="restartBtn" class="primary-btn" type="button">
+              Ride Again
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-controls">
+        <button id="leftBtn" type="button">⬅</button>
+        <button id="jumpBtn" type="button">⬆</button>
+        <button id="rightBtn" type="button">➡</button>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <section class="mini-card">
+        <h2>Mission</h2>
+        <p id="missionText">
+          Collect 15 shells and keep a combo above x3.
+        </p>
+        <div class="progress">
+          <span id="missionProgress"></span>
+        </div>
+      </section>
+
+      <section class="mini-card">
+        <h2>Power-ups</h2>
+        <ul>
+          <li><b>Bubble Shield</b> — blocks one crash.</li>
+          <li><b>Turbo Fin</b> — temporary speed boost.</li>
+          <li><b>Magnet Shell</b> — attracts shells.</li>
+        </ul>
+      </section>
+
+      <section class="mini-card">
+        <h2>Controls</h2>
+        <p>
+          Keyboard: ← → / A D to move, Space to jump.  
+          Mobile: use the buttons or swipe.
+        </p>
+      </section>
+
+      <section class="mini-card achievements">
+        <h2>Achievements</h2>
+        <div id="achievements"></div>
+      </section>
+    </aside>
+  </main>
+</div>
