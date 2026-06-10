@@ -3,128 +3,132 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Beach Quest · Surf Run 2</title>
-<meta name="description" content="Surf Run 2 – Beach Quest Complete Arcade Edition: moduri, campanie, shop, achievements, audio, boss și accessibility."/>
+<title>Beach Quest · Surf Run 2 · RO/EN</title>
+<meta name="description" content="Surf Run 2 – Beach Quest bilingual RO/EN, cu moduri de joc, shop, achievements și accessibility."/>
 <meta name="theme-color" content="#f9dfaa"/>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 <div class="app">
-  <header class="hero">
-    <div>
-      <p class="eyebrow">Surf Run 2 · Complete Arcade Edition</p>
-      <h1>Beach Quest 🏖️</h1>
-      <p>Colectează echipamentul de surf, treci de boss crab și intră în apă. Include moduri de joc, campanie, shop, daily challenge și accessibility.</p>
-    </div>
+<header class="hero">
+  <div>
+    <p class="eyebrow">Surf Run 2 · Beach Chapter</p>
+    <h1>Beach Quest 🏖️</h1>
+    <p>Colectează obiectele, supraviețuiește crabilor (inclusiv boss-ului!) și intră în apă. Audio, vieți, combo și power-ups incluse.</p>
+  </div>
+  <div class="hero-actions">
+    <button class="lang-toggle" id="langToggle" type="button" aria-label="Schimbă limba">RO / EN</button>
     <div class="status-pill" id="statusPill">Stage: Beach</div>
-  </header>
+  </div>
+</header>
 
-  <main class="layout">
-    <section class="game-card">
-      <div class="stats">
-        <div class="stat"><span>Score</span><strong id="score">0</strong></div>
-        <div class="stat"><span>Objective</span><strong id="shells">0/6</strong></div>
-        <div class="stat"><span>Energy</span><strong id="energy">100%</strong></div>
-        <div class="stat"><span>Mode</span><strong id="modeStat">Story</strong></div>
-        <div class="stat"><span>Timer</span><strong id="timerStat">∞</strong></div>
-      </div>
+<main class="layout">
+  <section class="game-card">
+    <div class="stats">
+      <div class="stat"><span>Score</span><strong id="score">0</strong></div>
+      <div class="stat"><span>Objective</span><strong id="shells">0/6</strong></div>
+      <div class="stat"><span>Energy</span><strong id="energy">100%</strong></div>
+      <div class="stat"><span>Mode</span><strong id="modeStat">Story</strong></div>
+      <div class="stat"><span>Timer</span><strong id="timerStat">∞</strong></div>
+    </div>
 
-      <div class="progress-map" aria-label="Progres campanie">
-        <span>🏖️ Beach</span><i></i><span>🐚 Gear</span><i></i><span>🦀 Boss</span><i></i><span>🌊 Water</span>
-      </div>
+    <div class="progress-map" aria-label="Progres campanie">
+      <span>🏖️ Beach</span><i></i><span>🐚 Gear</span><i></i><span>🦀 Boss</span><i></i><span>🌊 Water</span>
+    </div>
 
-      <div class="scene" id="scene">
-        <canvas id="game" width="900" height="520"></canvas>
+    <div class="scene" id="scene">
+      <canvas id="game" width="900" height="520"></canvas>
 
-        <div class="overlay" id="startScreen">
-          <div class="panel">
-            <div class="big">🏖️🚶🌊</div>
-            <p class="pill">Beach Quest</p>
-            <h2>Start on the sand</h2>
-            <p>Alege personajul, strânge echipamentul și intră în apă. Atenție la crabi și la boss!</p>
+      <div class="overlay" id="startScreen">
+        <div class="panel">
+          <div class="big">🏖️🚶🌊</div>
+          <p class="pill">Beach Quest</p>
+          <h2>Start on the sand</h2>
+          <p>Alege personajul, strânge echipamentul și intră în apă. Atenție la crabi și la boss!</p>
 
-            <div class="story-box">
-              <strong>📖 Story intro</strong>
-              <span>Valurile perfecte apar la apus. Trebuie să treci de plajă, să-ți recuperezi placa și să ajungi la prima lecție de surf.</span>
-            </div>
-
-            <div class="customizer">
-              <div class="box">
-                <label for="playerName">Nume</label>
-                <input id="playerName" maxlength="14" placeholder="Scrie numele" value="Laura"/>
-              </div>
-              <div class="box">
-                <span class="box-title">Personaj</span>
-                <div class="gender-row" id="genderRow">
-                  <button class="gender active" data-gender="girl" type="button">🙋 Fată</button>
-                  <button class="gender" data-gender="boy" type="button">🙋 Băiat</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="campaign-strip" id="campaignStrip" aria-label="Campanie Beach Quest"></div>
-
-            <div class="mode-picker" id="modePicker" aria-label="Alege modul de joc">
-              <button class="mode-card active" data-mode="story" type="button"><strong>🏖️ Story</strong><span>Misiuni clasice + boss</span></button>
-              <button class="mode-card" data-mode="sprint" type="button"><strong>⏱️ Time Attack</strong><span>90 secunde</span></button>
-              <button class="mode-card" data-mode="survival" type="button"><strong>🔥 Survival</strong><span>Scor țintă</span></button>
-              <button class="mode-card" data-mode="boss" type="button"><strong>🦀 Boss Rush</strong><span>Boss de la start</span></button>
-              <button class="mode-card" data-mode="zen" type="button"><strong>🧘 Zen</strong><span>Fără damage</span></button>
-            </div>
-
-            <p class="mode-desc" id="modeDesc">Story: strânge 6 scoici, crema și placa, apoi intră în apă.</p>
-            <p class="controls-note">⌨️ A/D sau ←/→ pentru mers · Space / W pentru sărit și colectat</p>
-            <button class="primary" id="startBtn">▶ Start Beach Quest</button>
+          <div class="story-box" id="storyIntro">
+            <strong>📖 Story intro</strong>
+            <span>Valurile perfecte apar doar la apus. Ajută personajul să treacă de nisip, să-și recupereze placa și să ajungă la prima lecție de surf.</span>
           </div>
-        </div>
 
-        <div class="overlay hidden" id="winScreen">
-          <div class="panel">
-            <div class="big" id="winEmoji">🌊🏄</div>
-            <p class="pill" id="winPill">Beach complete!</p>
-            <h2 id="winTitle">Ai intrat în apă!</h2>
-            <p id="winText">Beach Quest este complet.</p>
-            <div class="scores-wrap">
-              <p class="scores-label">🏆 Top 5 Scoruri</p>
-              <ul id="scoresList" class="scores-list"></ul>
-            </div>
-            <button class="primary" id="restartBtn">↩ Joacă din nou</button>
-            <a class="small-link" href="https://codepen.io/Laura-Andreea-the-typescripter/pen/vEyRgqQ" target="_blank" rel="noopener">Deschide Surf Run original →</a>
+          <div class="customizer">
+            <div class="box"><label for="playerName">Nume</label><input id="playerName" maxlength="14" placeholder="Scrie numele" value="Laura"></div>
+            <div class="box"><span class="box-title">Personaj</span><div class="gender-row" id="genderRow"><button class="gender active" data-gender="girl" type="button">🙋 Fată</button><button class="gender" data-gender="boy" type="button">🙋 Băiat</button></div></div>
           </div>
+
+          <div class="campaign-strip" id="campaignStrip" aria-label="Campanie Beach Quest"></div>
+
+          <div class="mode-picker" id="modePicker" aria-label="Alege modul de joc">
+            <button class="mode-card active" data-mode="story" type="button"><strong>🏖️ Story</strong><span>Misiuni clasice + boss</span></button>
+            <button class="mode-card" data-mode="sprint" type="button"><strong>⏱️ Time Attack</strong><span>90 secunde, ritm rapid</span></button>
+            <button class="mode-card" data-mode="survival" type="button"><strong>🔥 Survival</strong><span>Mai mulți crabi + scor țintă</span></button>
+            <button class="mode-card" data-mode="boss" type="button"><strong>🦀 Boss Rush</strong><span>Boss puternic de la început</span></button>
+            <button class="mode-card" data-mode="zen" type="button"><strong>🧘 Zen</strong><span>Fără damage, relax</span></button>
+          </div>
+
+          <p class="mode-desc" id="modeDesc">Story: strânge 6 scoici, crema și placa, apoi intră în apă.</p>
+          <p class="controls-note">⌨️ A/D sau ←/→ pentru mers · Space / W pentru sărit &amp; colectat</p>
+          <button class="primary" id="startBtn">▶ Start Beach Quest</button>
         </div>
       </div>
 
-      <div class="controls">
-        <button id="leftBtn">←</button>
-        <button id="actionBtn">Colectează / Sari</button>
-        <button id="rightBtn">→</button>
+      <div class="overlay hidden" id="winScreen">
+        <div class="panel">
+          <div class="big" id="winEmoji">🌊🏄</div>
+          <p class="pill" id="winPill">Beach complete!</p>
+          <h2 id="winTitle">Ai intrat în apă!</h2>
+          <p id="winText">Beach Quest este complet.</p>
+          <div class="scores-wrap">
+            <p class="scores-label">🏆 Top 5 Scoruri</p>
+            <ul id="scoresList" class="scores-list"></ul>
+          </div>
+          <button class="primary" id="restartBtn">↩ Joacă din nou</button>
+          <a class="small-link" href="https://codepen.io/Laura-Andreea-the-typescripter/pen/vEyRgqQ" target="_blank" rel="noopener">Deschide Surf Run original →</a>
+        </div>
       </div>
+    </div>
+
+    <div class="controls">
+      <button id="leftBtn">←</button>
+      <button id="actionBtn">Colectează / Sari</button>
+      <button id="rightBtn">→</button>
+    </div>
+  </section>
+
+  <aside class="side">
+    <section><h2>Campaign</h2><div class="campaign-panel" id="campaignPanel"></div></section>
+    <section><h2>Missions</h2><ul class="missions">
+      <li id="m1"><span>🐚</span><b id="mShellText">Collect 6 shells</b></li>
+      <li id="m2"><span>🧴</span>Find sunscreen</li>
+      <li id="m3"><span>🏄</span>Pick up the surfboard</li>
+      <li id="m4"><span>🌊</span>Walk to the water</li>
+    </ul></section>
+    <section><h2>Game Modes</h2>
+      <ul class="mode-list">
+        <li><strong>🏖️ Story</strong><span>echilibru între explorare, iteme și boss</span></li>
+        <li><strong>⏱️ Time Attack</strong><span>90 secunde, scor mai mare, crabi mai agresivi</span></li>
+        <li><strong>🔥 Survival</strong><span>8 scoici, 5 crabi, țintă de 3000 puncte</span></li>
+        <li><strong>🦀 Boss Rush</strong><span>boss HP 6 încă din start</span></li>
+        <li><strong>🧘 Zen</strong><span>fără damage, ideal pentru testare pe mobil</span></li>
+      </ul>
     </section>
-
-    <aside class="side">
-      <section><h2>Campaign</h2><div class="campaign-panel" id="campaignPanel"></div></section>
-      <section><h2>Missions</h2><ul class="missions">
-        <li id="m1"><span>🐚</span><b id="mShellText">Collect 6 shells</b></li>
-        <li id="m2"><span>🧴</span>Find sunscreen</li>
-        <li id="m3"><span>🏄</span>Pick up the surfboard</li>
-        <li id="m4"><span>🌊</span>Walk to the water</li>
-      </ul></section>
-      <section><h2>Daily Challenge</h2><div class="daily-card" id="dailyCard"></div></section>
-      <section><h2>Shop cu scoici</h2><div class="wallet">🐚 <strong id="walletShells">0</strong> shells</div><div class="shop-grid" id="shopGrid"></div></section>
-      <section><h2>Achievements</h2><div class="achievements" id="achievementsList"></div></section>
-      <section><h2>Accessibility</h2><div class="access-grid" id="accessGrid">
-        <label><input type="checkbox" data-access="reducedMotion"> Reduce motion / fără shake</label>
-        <label><input type="checkbox" data-access="highContrast"> High contrast</label>
-        <label><input type="checkbox" data-access="bigControls"> Butoane mai mari</label>
-        <label><input type="checkbox" data-access="noTimer"> Fără timer</label>
-      </div></section>
-      <section><h2>Features noi</h2><ul class="feature-list">
-        <li>🎵 Web Audio + ambient waves</li><li>❤️ 3 vieți + Game Over</li><li>🔥 Combo rapid</li>
-        <li>🦀 Boss crab cu HP</li><li>⚡ Speed + shield power-ups</li><li>🧭 Campanie cu capitole</li>
-        <li>🛒 Shop persistent</li><li>🏅 Achievements + daily</li><li>♿ Accessibility layer</li>
-      </ul></section>
-    </aside>
-  </main>
+    <section><h2>Daily Challenge</h2><div class="daily-card" id="dailyCard"></div></section>
+    <section><h2>Shop cu scoici</h2><div class="wallet">🐚 <strong id="walletShells">0</strong> shells</div><div class="shop-grid" id="shopGrid"></div></section>
+    <section><h2>Achievements</h2><div class="achievements" id="achievementsList"></div></section>
+    <section><h2>Accessibility</h2><div class="access-grid" id="accessGrid">
+      <label><input type="checkbox" data-access="reducedMotion"> Reduce motion / fără shake</label>
+      <label><input type="checkbox" data-access="highContrast"> High contrast</label>
+      <label><input type="checkbox" data-access="bigControls"> Butoane mai mari</label>
+      <label><input type="checkbox" data-access="noTimer"> Fără timer în modurile cronometrate</label>
+    </div></section>
+    <section><h2>Portfolio Note</h2><div class="portfolio-note">
+      <p><strong>Beach Quest · Complete Arcade Edition</strong></p>
+      <p>HTML, CSS și JavaScript vanilla · Canvas game · Web Audio API · localStorage · moduri de joc · shop · achievements · daily challenge · accessibility layer.</p>
+    </div></section>
+    <section><h2>Features noi</h2><ul id="featuresList" class="feature-list"></ul></section>
+    <section><h2>Controls</h2><p class="hint">← → / A D pentru mers. Space / W sare și colectează. Pe mobil – butoanele de jos.</p></section>
+  </aside>
+</main>
 </div>
 <script src="script.js"></script>
 </body>
